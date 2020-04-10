@@ -32,6 +32,8 @@ public class CredPres extends BaseViewPresenter implements Credentials.Presenter
 	@Override
 	public void getTokenSend(POSLink posLink)
 	{
+		CredentialsData.initCredentialsData();
+
 		TelephonyManager telephonyManager = (TelephonyManager)
 			context.getSystemService(Context.TELEPHONY_SERVICE);
 
