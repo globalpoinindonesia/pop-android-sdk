@@ -20,7 +20,7 @@
 
 using json = nlohmann::json;
 
-extern "C" jstring Java_id_gpi_getplussdk_common_GetPlusLib_EncryptionProcess(JNIEnv *env, jclass clazz)
+extern "C" jstring Java_id_gpi_popplus_service_GetPlusLib_EncryptionProcess(JNIEnv *env, jclass clazz)
 {
 	json j1;
 	j1["BaseURL"] = "https://dev-popplus.gpiapis.com";
@@ -36,8 +36,7 @@ extern "C" jstring Java_id_gpi_getplussdk_common_GetPlusLib_EncryptionProcess(JN
 //	return env->NewStringUTF(j1.dump().c_str());
 }
 
-extern "C" jstring Java_id_gpi_getplussdk_common_GetPlusLib_GetRSNProcess(JNIEnv *env, jclass clazz,
-                                                                            jstring DeviceID, jstring Serial, jstring Imei)
+extern "C" jstring Java_id_gpi_popplus_service_GetPlusLib_GetRSNProcess(JNIEnv *env, jclass clazz, jstring DeviceID, jstring Serial, jstring Imei)
 {
 	const char *ccDeviceID = env->GetStringUTFChars(DeviceID, 0);
 	const char *ccSerial = env->GetStringUTFChars(Serial, 0);
@@ -107,7 +106,7 @@ extern "C" jstring Java_id_gpi_getplussdk_common_GetPlusLib_GetRSNProcess(JNIEnv
 
 namespace android
 {
-  double getpluslibversion() {
+  double poppluslibversion() {
     return GETPLUSLIB_VERSION;
   }
 }
@@ -116,7 +115,7 @@ using namespace android;
 
 static JNINativeMethod g_NativeMethods[] =
 {
-	{"Version", "()D", (void *) getpluslibversion}
+	{"Version", "()D", (void *) poppluslibversion}
 };
 
 int register_getpluslib_android(JNIEnv* env) {

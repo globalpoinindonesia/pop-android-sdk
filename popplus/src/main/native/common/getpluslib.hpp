@@ -2,8 +2,8 @@
 // Created by aignatd on 06-Aug-19.
 //
 
-#ifndef GETPLUSSDK_GETPLUSSDK_H
-#define GETPLUSSDK_GETPLUSSDK_H
+#ifndef POPPLUS_POPPLUS_H
+#define POPPLUS_POPPLUS_H
 
 #include <jni.h>
 #include <android/log.h>
@@ -25,10 +25,10 @@ static const char* chrInitVector = "hhMtWk0xUL6sFlkOrw9hXA==";
 static const char* chrConsumerKey = "fAycQ9xEH0uobDv2twcclA";
 static const char* chrSecretKey = "i2WzqlmoAkh4vTFZaEnFgsFsVO4Kq8AgLDU2PNCAtQg";
 
-static const char *classpath = "id/gpi/getplussdk/common/GetPlusLib";
+static const char *classpath = "id/gpi/popplus/service/GetPlusLib";
 
 JNIEnv* getJNIEnv();
 int jniThrowException(JNIEnv *env,const char* className,const char* msg);
 int jniRegisterNativeMethods(JNIEnv* env,const char* className,const JNINativeMethod* gMethod,int numMethods);
 
-#endif //GETPLUSSDK_GETPLUSSDK_H
+#endif //POPPLUS_POPPLUS_H
