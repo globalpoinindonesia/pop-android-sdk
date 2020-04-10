@@ -8,7 +8,6 @@ public class FixValue {
 	public static final String POP_URL = "http://192.168.237.2:31013/";
 //	public static final String POP_URL = "http://192.168.137.1:31013/";
 //	public static final String POP_URL = "https://dev-popplus.gpiapis.com/";
-//	public static final String POP_URL = "https://dev-popplus.gpiapis.com/";
 //	public static final String POP_URL = "https://popplus.gpiapis.com/";
 
 	// Route credentials path to POS API
