@@ -1,12 +1,16 @@
 package id.gpi.popplus;
 
-import id.gpi.popplus.base.BaseViewPresenter;
+import id.gpi.popplus.base.IBaseViewPresenter;
+import id.gpi.popplus.model.ResponsePojo;
+import id.gpi.popplus.service.POSLink;
 
-public class Credentials extends BaseViewPresenter {
-	private static final String TAG = "Credentials";
+public interface Credentials {
 
-	public static String getToken()
-	{
-		return "Library berhasil";
-	}
+    interface Presenter extends IBaseViewPresenter {
+        void getTokenSend(POSLink posLink);
+    }
+
+    interface View {
+        void getTokenRsp(ResponsePojo responsePojo);
+    }
 }
