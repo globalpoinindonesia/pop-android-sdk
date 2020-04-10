@@ -14,6 +14,7 @@ import id.gpi.popplus.common.Fungsi;
 import id.gpi.popplus.model.CredentialsData;
 import id.gpi.popplus.model.DeviceData;
 import id.gpi.popplus.model.ResponsePojo;
+import id.gpi.popplus.service.GetPlusLib;
 import id.gpi.popplus.service.POSLink;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -49,8 +50,7 @@ public class CredPres extends BaseViewPresenter implements Credentials.Presenter
 		deviceData.setSerial("000000000000000");
 		deviceData.setDeviceID("000000000000000");
 		deviceData.setOS(Fungsi.AndroidVersion());
-//		deviceData.setRSN(GetPlusLib.GetRSNProcess(deviceId, serial, imei));
-		deviceData.setRSN("Test1234567890");
+		deviceData.setRSN(GetPlusLib.GetRSNProcess(deviceId, serial, imei));
 		deviceData.setScope("Mobile POS");
 
 		posLink.GetTokenService(deviceData).subscribeOn(Schedulers.io())
