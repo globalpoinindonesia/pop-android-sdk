@@ -1,6 +1,8 @@
 package id.gpi.popplus;
 
-public class Credentials {
+import id.gpi.popplus.base.BaseViewPresenter;
+
+public class Credentials extends BaseViewPresenter {
 	private static final String TAG = "Credentials";
 
 	public static String getToken()
