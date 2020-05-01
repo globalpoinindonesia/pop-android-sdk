@@ -1,42 +1,30 @@
-//
-// Created by Ignat on 26/07/2019
-//
-
 #include <jni.h>
-#include "onload.hpp"
-#include "getpluslib.hpp"
-#include "utils.hpp"
-#include "json.hpp"
-
-#include <iostream>
-#include <iomanip>
-#include <string>
 #include <vector>
-#include <cassert>
-#include <zconf.h>
-#include <jni.h>
-#include <jni.h>
-#include <regex>
+#include "getpluslib.hpp"
+#include "../encryptor/base64.hpp"
+#include "utils.hpp"
+#include "../encryptor/aes256.h"
+#include <android/log.h>
 
-using json = nlohmann::json;
-
-extern "C" jstring Java_id_gpi_popplus_service_GetPlusLib_EncryptionProcess(JNIEnv *env, jclass clazz)
-{
-	json j1;
-	j1["BaseURL"] = "https://dev-popplus.gpiapis.com";
-	j1["ClientID"] = "602027FB561E08105A23F098B4488D0B97AD53265E1BF58522D79A535A4FF715";
-	j1["ClientSecret"] = "8FDA2B4A2E4675F7379FE33CAA22DA8B0892E8EFFE2F09F8268E208CA5818FA8";
-	j1["DeviceID"] = "356048081566662";
-	j1["RandomKey"] = getRandomKey(32);
-	j1["Scope"] = "Mobile POS";
-	j1["Timestamp"] = getTimeStamp();
-
-	const char* encResult = EncryptData(j1.dump().c_str());
-	return env->NewStringUTF(encResult);
-//	return env->NewStringUTF(j1.dump().c_str());
+unsigned char* DecodeEncryptKey() {
+	basedata decodeencryptkey = base64_decode(devkey.c_str(), strlen(devkey.c_str()));
+	return decodeencryptkey.data;
 }
 
-extern "C" jstring Java_id_gpi_popplus_service_GetPlusLib_GetRSNProcess(JNIEnv *env, jclass clazz, jstring DeviceID, jstring Serial, jstring Imei)
+unsigned char* DecodeEncryptIV() {
+	basedata decodeencryptiv = base64_decode(deviv.c_str(), strlen(deviv.c_str()));
+	return decodeencryptiv.data;
+}
+
+extern "C" jstring Java_id_gpi_popplus_CredLib_GetUserAuth(JNIEnv *env, jclass clazz) {
+	return env-> NewStringUTF(chrUserAuth.c_str());
+}
+
+extern "C" jstring Java_id_gpi_popplus_CredLib_GetPassAuth(JNIEnv *env, jclass clazz) {
+	return env-> NewStringUTF(chrPassAuth.c_str());
+}
+
+extern "C" jstring Java_id_gpi_popplus_CredLib_GetDeviceRSN(JNIEnv *env, jclass clazz, jstring DeviceID, jstring Serial, jstring Imei)
 {
 	const char *ccDeviceID = env->GetStringUTFChars(DeviceID, 0);
 	const char *ccSerial = env->GetStringUTFChars(Serial, 0);
@@ -100,62 +88,136 @@ extern "C" jstring Java_id_gpi_popplus_service_GetPlusLib_GetRSNProcess(JNIEnv *
 	}
 
 	DeviceRSN = copy1 + copy2 + copy3;
+	env->ReleaseStringUTFChars(DeviceID, ccDeviceID);
+	env->ReleaseStringUTFChars(Serial, ccSerial);
+	env->ReleaseStringUTFChars(Imei, ccImei);
 
-	return env-> NewStringUTF(copy2.c_str());
+	return env->NewStringUTF(DeviceRSN.c_str());
 }
 
-namespace android
+extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass clazz, jstring mingwen)
 {
-  double poppluslibversion() {
-    return GETPLUSLIB_VERSION;
-  }
-}
+	aes256_context ctx;
+	aes256_init(&ctx, DecodeEncryptKey());
+	const char *mwChar = env->GetStringUTFChars(mingwen, JNI_FALSE);
 
-using namespace android;
+	int i;
+	int mwSize = strlen(mwChar);
+	int remainder = mwSize % BLOCK_SIZE;
 
-static JNINativeMethod g_NativeMethods[] =
-{
-	{"Version", "()D", (void *) poppluslibversion}
-};
+	jstring entryptString;
+	char *enc;
+	int loop=0;
 
-int register_getpluslib_android(JNIEnv* env) {
-  return jniRegisterNativeMethods(env, classpath, g_NativeMethods,
-    sizeof(g_NativeMethods) / sizeof(g_NativeMethods[0]));
-}
-
-/*
-jint JNI_OnLoad(JavaVM* pJavaVM, void* pReserved)
-{
-	JNIEnv* pEnv;
-
-	if(pJavaVM->GetEnv(reinterpret_cast<void**>(&pEnv), JNI_VERSION_1_6) != JNI_OK)
-		return -1;
-
-	static jclass javaLibClass = pEnv->FindClass("id/gpi/getplussdk/common/GetPlusLib");
-	if(pEnv->RegisterNatives(javaLibClass, g_NativeMethods, sizeof(g_NativeMethods) / sizeof(g_NativeMethods[0])) < 0)
+	if (mwSize < BLOCK_SIZE)
 	{
-		if (pEnv->ExceptionOccurred())
+		uint8_t input[BLOCK_SIZE];
+
+		for (i = 0; i < BLOCK_SIZE; i++)
 		{
-			LOGV("Error -2");
-			return -2; //Return with error
+			if (i < mwSize)
+				input[i] = (unsigned char) mwChar[i];
+			else
+			if(loop == 0)
+				input[i] = 0x23;
+			else
+				input[i] = (unsigned char) (BLOCK_SIZE - mwSize);
+
+			loop++;
 		}
-		else
+
+		uint8_t output[BLOCK_SIZE];
+		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(), output);
+		enc = base64_encode((const char*) output, sizeof(output));
+	}
+	else
+	{
+		int group = mwSize / BLOCK_SIZE;
+		int size = BLOCK_SIZE * (group + 1);
+
+		uint8_t input[size];
+
+		for (i=0; i<size; i++)
 		{
-			LOGV("Error -3");
-			return -3; //Return with error
+			if (i < mwSize)
+				input[i] = (unsigned char) mwChar[i];
+			else
+			{
+				if (remainder == 0)
+					input[i] = 0x20;
+				else
+				{
+					if(loop == 0)
+						input[i] = 0x23;
+					else
+						input[i] = (unsigned char) (BLOCK_SIZE - mwSize);
+
+					loop++;
+				}
+			}
 		}
+
+		uint8_t output[size];
+		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(), output);
+		enc = base64_encode((const char*) output, sizeof(output));
 	}
 
-	LOGV("Engine library successfully loaded");
+	entryptString = charToJstring(env, enc);
+	free(enc);
+	env->ReleaseStringUTFChars(mingwen, mwChar);
+	return entryptString;
 
-	return JNI_VERSION_1_6;
-}
+/*
+	json j1;
+	j1["BaseURL"] = "https://dev-popplus.gpiapis.com";
+	j1["ClientID"] = "602027FB561E08105A23F098B4488D0B97AD53265E1BF58522D79A535A4FF715";
+	j1["ClientSecret"] = "8FDA2B4A2E4675F7379FE33CAA22DA8B0892E8EFFE2F09F8268E208CA5818FA8";
+	j1["DeviceID"] = "356048081566662";
+	j1["RandomKey"] = getRandomKey(32);
+	j1["Scope"] = "Mobile POS";
+	j1["Timestamp"] = getTimeStamp();
 
-jstring DataEnkrip()
-{
-	CryptoPP::byte key[CryptoPP::AES::DEFAULT_KEYLENGTH];
-	CryptoPP::byte iv[CryptoPP::AES::BLOCKSIZE];
-	memset( key, 0x00, CryptoPP::AES::DEFAULT_KEYLENGTH );
-	memset( iv, 0x00, CryptoPP::AES::BLOCKSIZE );
-}
+	const char* encResult = EncryptData(j1.dump().c_str());
+	return env->NewStringUTF(encResult);
+//	return env->NewStringUTF(j1.dump().c_str());
 */
+}
+
+extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclass clazz, jstring mingwen)
+{
+	int i;
+
+	aes256_context ctx;
+	aes256_init(&ctx, DecodeEncryptKey());
+
+	const char *encryptChar = env->GetStringUTFChars(mingwen, JNI_FALSE);
+	basedata decodebase64 = base64_decode(encryptChar, strlen(encryptChar));
+	int len = decodebase64.len;
+
+	unsigned char resbuf[len];
+	int ii;
+
+	for (ii = 0; ii < len; ii++) {
+		resbuf[ii] = *(decodebase64.data + ii);
+	}
+
+	uint8_t output[len];
+	aes256_decrypt_cbc(&ctx, resbuf, DecodeEncryptIV(), output, len);
+
+	uint8_t pad = output[len - 1];
+
+	if (pad < 1 || pad > 0x20)
+		pad = 0;
+
+	int reslen = len - pad;
+	char resultChar[reslen];
+
+	for (i = 0; i < reslen; i++) {
+		resultChar[i] = output[i];
+	}
+
+	env->ReleaseStringUTFChars(mingwen, encryptChar);
+	free(decodebase64.data);
+
+	return charToJbyteArray(env, resultChar, reslen);
+}

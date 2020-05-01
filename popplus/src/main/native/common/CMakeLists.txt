@@ -19,12 +19,10 @@ add_library(
  # Sets the library as a shared library.
     SHARED
  # Provides a relative path to your source file(s).
-    getpluslib.cpp
-    onload.cpp
+	getpluslib.cpp
 	utils.cpp
-	../aeseverywhere/aes256.cpp
-	../aeseverywhere/base64.cpp
-	../aeseverywhere/md5.cpp
+	../encryptor/aes256.c
+	../encryptor/base64.cpp
 )
 
 find_library( # Sets the name of the path variable.

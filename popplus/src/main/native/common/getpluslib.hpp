@@ -1,34 +1,13 @@
-//
-// Created by aignatd on 06-Aug-19.
-//
+#include <string>
 
-#ifndef POPPLUS_POPPLUS_H
-#define POPPLUS_POPPLUS_H
+// development basic authentication
+std::string chrUserAuth("602027FB561E08105A23F098B4488D0B97AD53265E1BF58522D79A535A4FF715");
+std::string chrPassAuth("8FDA2B4A2E4675F7379FE33CAA22DA8B0892E8EFFE2F09F8268E208CA5818FA8");
 
-#include <jni.h>
-#include <android/log.h>
+// development encryption key
+std::string devkey("mBI+LWhYkOjClxjfuUrFZHHYfO17lBgRh4bLnVuuLRQ=");
 
-#define DEBUG 1
-#define GETPLUSLIB_VERSION 0.1
+// development init vector
+std::string deviv("hhMtWk0xUL6sFlkOrw9hXA==");
 
-#define LOG_TAG "GETPLUS"
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-
-#if DEBUG
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
-#else
-#define LOGV(...)
-#endif
-
-static const char* chrEncryptKey = "mBI+LWhYkOjClxjfuUrFZHHYfO17lBgRh4bLnVuuLRQ=";
-static const char* chrInitVector = "hhMtWk0xUL6sFlkOrw9hXA==";
-static const char* chrConsumerKey = "fAycQ9xEH0uobDv2twcclA";
-static const char* chrSecretKey = "i2WzqlmoAkh4vTFZaEnFgsFsVO4Kq8AgLDU2PNCAtQg";
-
-static const char *classpath = "id/gpi/popplus/service/GetPlusLib";
-
-JNIEnv* getJNIEnv();
-int jniThrowException(JNIEnv *env,const char* className,const char* msg);
-int jniRegisterNativeMethods(JNIEnv* env,const char* className,const JNINativeMethod* gMethod,int numMethods);
-
-#endif //POPPLUS_POPPLUS_H
+const int BLOCK_SIZE = 32;

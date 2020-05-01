@@ -1,12 +1,14 @@
-package id.gpi.popplus.common;
+package id.gpi.popplussdk;
 
 /**
  * Created by ignat on 16-Jun-16.
  */
-public class FixValue {
+public class myFixValue {
+	public static final String strNamePref = "id.mygetplus.getpluspos.pref";
+
 	// Base URL to POS API
-	public static final String POP_URL = "http://192.168.237.2:31013/";
-//	public static final String POP_URL = "http://192.168.137.1:31013/";
+//	public static final String POP_URL = "http://192.168.237.2:31013/";
+	public static final String POP_URL = "http://192.168.137.1:31013/";
 //	public static final String POP_URL = "https://dev-popplus.gpiapis.com/";
 //	public static final String POP_URL = "https://dev-popplus.gpiapis.com/";
 //	public static final String POP_URL = "https://popplus.gpiapis.com/";
@@ -14,8 +16,21 @@ public class FixValue {
 	// Route credentials path to POS API
 	public static final String PathCredentials = "/credential/v2/202003";
 
+	// Route account path to POS API
+	public static final String PathAccount = "/pos/v2/202003";
+
 	// Route path auth to POS API
 	public static final String PathGetToken = "/auth/gettoken";
+
+	// Route path account to POS API
+	public static final String PathUserAuth = "/account/login";
+	public static final String PathUserLogout = "/account/logout";
+
+	// Route path voucher transaction to POS API
+	public static final String PathVoucherTrans = "/transaction/vouchertrans/{PersonalID}";
+
+	// Route path partner to POS API
+	public static final String PathPartner = "/partner/partnertoken/{AccountID}";
 
 	//Network Connectivity
 	public static final int TimeoutConnection = 45000;
