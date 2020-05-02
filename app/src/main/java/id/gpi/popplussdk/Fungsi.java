@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -152,13 +153,13 @@ public class Fungsi extends AppCompatActivity
 		editor.putString(key, CredLib.DataProcess(String.valueOf(value))).apply();
 	}
 
-	public static void storeObjectToSavePref(final Context context, Object object, String key)
+	public static void storeObjectToSavePref(final Context context, Map<String, String> strTmp, String key)
 	{
-		String strTmp = new Gson().toJson(object);
-		String value = CredLib.DataProcess(strTmp);
+//		String strTmp = new Gson().toJson(object);
+		String value = CredLib.DataProcess(strTmp.toString());
 
 		SharedPreferences.Editor editor = context.getSharedPreferences(myFixValue.strNamePref, Context.MODE_PRIVATE).edit();
-		editor.putString(key, value).apply();
+		editor.putString(key, value).commit();
 	}
 
 	public static String getStringFromSavePref(final Context context, String key)

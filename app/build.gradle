@@ -1,6 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        POPPlusSDK {
+            storeFile file('d:\\Data\\GetPlus\\GooglePlay\\POPPlus\\GetPlusPOS.jks')
+            storePassword 'Getplus123!@#'
+            keyPassword 'Getplus123!@#'
+            keyAlias = 'GetPlusPOS'
+        }
+    }
+
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
 
@@ -15,9 +24,18 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
+            debuggable true
             minifyEnabled false
+            useProguard true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        release {
+            debuggable false
+            minifyEnabled false
+            useProguard true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.POPPlusSDK
         }
     }
 }
@@ -32,4 +50,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation project(path: ':popplus')
     implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.8'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
 }
