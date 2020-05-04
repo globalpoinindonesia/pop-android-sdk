@@ -3,17 +3,11 @@ package id.gpi.popplussdk;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import org.w3c.dom.Text;
+import com.alibaba.fastjson.JSON;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,10 +33,18 @@ public class MainActivity extends AppCompatActivity {
 
 		tvHello.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				Fungsi.storeObjectToSavePref(getApplicationContext(), temp, "CobaDulu");
-				String test = CredLib.DataProcess(temp.toString());
-				Log.d(TAG, "onCreate: " + test);
-				Log.d(TAG, "onCreate: " +  CredLib.DataCheck(test));
+				for(int i=0; i<150; i++)
+				{
+					String strTest = CredLib.DataProcess(temp.toString());
+					Log.d("Enkrip", "Endkrip ke " + (i+1) + " : " + strTest);
+					Log.d("Dekrip", "Dekrip ke " + (i+1) + " : " + CredLib.DataCheck(strTest));
+
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		});
 	}

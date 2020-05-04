@@ -1,34 +1,33 @@
+// C++ JNI
 #include <jni.h>
 #include <vector>
-#include "getpluslib.hpp"
+#include <android/log.h>
+#include "poppluslib.hpp"
 #include "../encryptor/base64.hpp"
 #include "utils.hpp"
 #include "../encryptor/aes256.h"
-#include <android/log.h>
 
 unsigned char* DecodeEncryptKey() {
-	basedata decodeencryptkey = base64_decode(devkey.c_str(), strlen(devkey.c_str()));
-	return decodeencryptkey.data;
+		return base64_decode(devkey).data;
 }
 
 unsigned char* DecodeEncryptIV() {
-	basedata decodeencryptiv = base64_decode(deviv.c_str(), strlen(deviv.c_str()));
-	return decodeencryptiv.data;
+		return base64_decode(deviv).data;
 }
 
-extern "C" jstring Java_id_gpi_popplus_CredLib_GetUserAuth(JNIEnv *env, jclass clazz) {
+extern "C" jstring Java_id_gpi_popplus_CredLib_UserAuth(JNIEnv *env, jclass/* clazz */) {
 	return env-> NewStringUTF(chrUserAuth.c_str());
 }
 
-extern "C" jstring Java_id_gpi_popplus_CredLib_GetPassAuth(JNIEnv *env, jclass clazz) {
+extern "C" jstring Java_id_gpi_popplus_CredLib_PassAuth(JNIEnv *env, jclass/* clazz */) {
 	return env-> NewStringUTF(chrPassAuth.c_str());
 }
 
-extern "C" jstring Java_id_gpi_popplus_CredLib_GetDeviceRSN(JNIEnv *env, jclass clazz, jstring DeviceID, jstring Serial, jstring Imei)
+extern "C" jstring Java_id_gpi_popplus_CredLib_DeviceRSN(JNIEnv *env, jclass/* clazz */, jstring DeviceID, jstring Serial, jstring Imei)
 {
-	const char *ccDeviceID = env->GetStringUTFChars(DeviceID, 0);
-	const char *ccSerial = env->GetStringUTFChars(Serial, 0);
-	const char *ccImei = env->GetStringUTFChars(Imei, 0);
+	const char *ccDeviceID = env->GetStringUTFChars(DeviceID, JNI_FALSE);
+	const char *ccSerial = env->GetStringUTFChars(Serial, JNI_FALSE);
+	const char *ccImei = env->GetStringUTFChars(Imei, JNI_FALSE);
 
 	std::string DeviceRSN;
 
@@ -95,18 +94,18 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_GetDeviceRSN(JNIEnv *env, jclass 
 	return env->NewStringUTF(DeviceRSN.c_str());
 }
 
-extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass clazz, jstring mingwen)
+extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/* clazz */, jstring mingwen)
 {
 	aes256_context ctx;
 	aes256_init(&ctx, DecodeEncryptKey());
+
 	const char *mwChar = env->GetStringUTFChars(mingwen, JNI_FALSE);
 
 	int i;
 	int mwSize = strlen(mwChar);
 	int remainder = mwSize % BLOCK_SIZE;
 
-	jstring entryptString;
-	char *enc;
+	std::string enc;
 	int loop=0;
 
 	if (mwSize < BLOCK_SIZE)
@@ -128,7 +127,7 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass c
 
 		uint8_t output[BLOCK_SIZE];
 		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(), output);
-		enc = base64_encode((const char*) output, sizeof(output));
+		enc = base64_encode(output, sizeof(output));
 	}
 	else
 	{
@@ -159,13 +158,11 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass c
 
 		uint8_t output[size];
 		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(), output);
-		enc = base64_encode((const char*) output, sizeof(output));
+		enc = base64_encode(output, sizeof(output));
 	}
 
-	entryptString = charToJstring(env, enc);
-	free(enc);
 	env->ReleaseStringUTFChars(mingwen, mwChar);
-	return entryptString;
+	return env->NewStringUTF(enc.c_str());
 
 /*
 	json j1;
@@ -183,21 +180,19 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass c
 */
 }
 
-extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclass clazz, jstring mingwen)
+extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclass/* clazz */, jstring mingwen)
 {
-	int i;
-
 	aes256_context ctx;
 	aes256_init(&ctx, DecodeEncryptKey());
 
 	const char *encryptChar = env->GetStringUTFChars(mingwen, JNI_FALSE);
-	basedata decodebase64 = base64_decode(encryptChar, strlen(encryptChar));
+	std::string strData(encryptChar);
+	basedata decodebase64 = base64_decode(encryptChar);
 	int len = decodebase64.len;
 
 	unsigned char resbuf[len];
-	int ii;
 
-	for (ii = 0; ii < len; ii++) {
+	for (int ii = 0; ii < len; ii++) {
 		resbuf[ii] = *(decodebase64.data + ii);
 	}
 
@@ -212,12 +207,10 @@ extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclas
 	int reslen = len - pad;
 	char resultChar[reslen];
 
-	for (i = 0; i < reslen; i++) {
+	for (int i = 0; i < reslen; i++) {
 		resultChar[i] = output[i];
 	}
 
 	env->ReleaseStringUTFChars(mingwen, encryptChar);
-	free(decodebase64.data);
-
 	return charToJbyteArray(env, resultChar, reslen);
 }

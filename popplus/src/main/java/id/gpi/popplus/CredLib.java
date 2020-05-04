@@ -15,7 +15,7 @@ public class CredLib
     try
     {
       Log.d(TAG,"Load POPPlus NDK started....");
-      System.loadLibrary("GetPlusNDK");
+      System.loadLibrary("POPPlusNDK");
       Log.d(TAG,"Load POPPlus NDK finished");
     }
     catch (UnsatisfiedLinkError ule)
@@ -26,9 +26,9 @@ public class CredLib
 
   static native byte[] DataDecrypt(String str);
   public static native String DataProcess(String str);
-  public static native String GetDeviceRSN(String DeviceID, String Serial, String Imei);
-  public static native String GetUserAuth();
-  public static native String GetPassAuth();
+  public static native String DeviceRSN(String DeviceID, String Serial, String Imei);
+  public static native String UserAuth();
+  public static native String PassAuth();
 
   public static String DataCheck(String data)
   {

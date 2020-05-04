@@ -15,11 +15,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++17")
 
 add_library(
  # Specifies the name of the library.
-    GetPlusNDK
+    POPPlusNDK
  # Sets the library as a shared library.
     SHARED
  # Provides a relative path to your source file(s).
-	getpluslib.cpp
+    poppluslib.cpp
 	utils.cpp
 	../encryptor/aes256.c
 	../encryptor/base64.cpp
@@ -33,7 +33,7 @@ find_library( # Sets the name of the path variable.
 		log )
 
 target_link_libraries(
-	GetPlusNDK
+	POPPlusNDK
 	android
 	log
 	${log-lib}

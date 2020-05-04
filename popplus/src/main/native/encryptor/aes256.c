@@ -142,7 +142,7 @@ uint8_t gf_log(uint8_t x) // calculate logarithm gen 3
 /* -------------------------------------------------------------------------- */
 uint8_t gf_mulinv(uint8_t x) // calculate multiplicative inverse
 {
-	return (x) ? gf_alog(255 - gf_log(x)) : 0;
+	return (unsigned char) ((x) ? gf_alog((unsigned char) (255 - gf_log(x))) : 0);
 } /* gf_mulinv */
 
 /* -------------------------------------------------------------------------- */
@@ -154,7 +154,7 @@ uint8_t rj_sbox(uint8_t x)
 	y = (y<<1)|(y>>7); sb ^= y;  y = (y<<1)|(y>>7); sb ^= y;
 	y = (y<<1)|(y>>7); sb ^= y;  y = (y<<1)|(y>>7); sb ^= y;
 
-	return (sb ^ 0x63);
+	return (unsigned char) (sb ^ 0x63);
 } /* rj_sbox */
 
 /* -------------------------------------------------------------------------- */
@@ -162,7 +162,7 @@ uint8_t rj_sbox_inv(uint8_t x)
 {
 	uint8_t y, sb;
 
-	y = x ^ 0x63;
+	y = (unsigned char) (x ^ 0x63);
 	sb = y = (y<<1)|(y>>7);
 	y = (y<<2)|(y>>6); sb ^= y; y = (y<<3)|(y>>5); sb ^= y;
 
@@ -174,7 +174,7 @@ uint8_t rj_sbox_inv(uint8_t x)
 /* -------------------------------------------------------------------------- */
 uint8_t rj_xtime(uint8_t x)
 {
-	return (x & 0x80) ? ((x << 1) ^ 0x1b) : (x << 1);
+	return (unsigned char) ((x & 0x80) ? ((x << 1) ^ 0x1b) : (x << 1));
 } /* rj_xtime */
 
 /* -------------------------------------------------------------------------- */
@@ -276,7 +276,7 @@ void aes_expandEncKey(uint8_t *k, uint8_t *rc)
 	k[1] ^= rj_sbox(k[30]);
 	k[2] ^= rj_sbox(k[31]);
 	k[3] ^= rj_sbox(k[28]);
-	*rc = F( *rc);
+	*rc = (unsigned char) F(*rc);
 
 	for(i = 4; i < 16; i += 4)  k[i] ^= k[i-4],   k[i+1] ^= k[i-3],
 	                            k[i+2] ^= k[i-2], k[i+3] ^= k[i-1];
@@ -306,7 +306,7 @@ void aes_expandDecKey(uint8_t *k, uint8_t *rc)
 	for(i = 12; i > 0; i -= 4)  k[i+0] ^= k[i-4], k[i+1] ^= k[i-3],
 	                            k[i+2] ^= k[i-2], k[i+3] ^= k[i-1];
 
-	*rc = FD(*rc);
+	*rc = (unsigned char) FD(*rc);
 	k[0] ^= rj_sbox(k[29]) ^ (*rc);
 	k[1] ^= rj_sbox(k[30]);
 	k[2] ^= rj_sbox(k[31]);
@@ -386,17 +386,16 @@ void aes256_decrypt(aes256_context *ctx,uint8_t *iv, uint8_t *buf)
 	aes_cbc(buf,iv);
 } /* aes256_decrypt */
 
-
-
 void aes256_encrypt_cbc(aes256_context *ctx, uint8_t *in, uint8_t *iv, uint8_t *out)
 {
 	uint8_t i, j, rcon;
 	uint8_t buf[16],iv_change[16];
-	int size = strlen(in) / 16;
+	int size = strlen((const char *) in) / 16;
 
 	for(j = 0; j < size; j++ )
 	{
-		memcpy(buf, in + j * 16, 16 );
+		memcpy(buf, in + j * 16, 16);
+
 		if(j == 0)
 		{
 			aes_cbc(buf,iv);
@@ -452,24 +451,24 @@ void aes256_decrypt_cbc(aes256_context *ctx, uint8_t *in, uint8_t *iv, uint8_t *
 		if(j == 0)
 		{
 			memcpy(iv_change_1,buf,16);
-			aes_addRoundKey_cpy(buf, ctx->deckey, ctx->key);
-			aes_shiftRows_inv(buf);
-			aes_subBytes_inv(buf);
+			aes_addRoundKey_cpy((unsigned char *) buf, ctx->deckey, ctx->key);
+			aes_shiftRows_inv((unsigned char *) buf);
+			aes_subBytes_inv((unsigned char *) buf);
 
 			for (i = 14, rcon = 0x80; --i;)
 			{
 				if( ( i & 1 ) )
 				{
-					aes_expandDecKey(ctx->key, &rcon);
-					aes_addRoundKey(buf, &ctx->key[16]);
+					aes_expandDecKey(ctx->key, (unsigned char *) &rcon);
+					aes_addRoundKey((unsigned char *) buf, &ctx->key[16]);
 				}
-				else aes_addRoundKey(buf, ctx->key);
-				aes_mixColumns_inv(buf);
-				aes_shiftRows_inv(buf);
-				aes_subBytes_inv(buf);
+				else aes_addRoundKey((unsigned char *) buf, ctx->key);
+				aes_mixColumns_inv((unsigned char *) buf);
+				aes_shiftRows_inv((unsigned char *) buf);
+				aes_subBytes_inv((unsigned char *) buf);
 			}
-			aes_addRoundKey(buf, ctx->key);
-			aes_cbc(buf,iv);
+			aes_addRoundKey((unsigned char *) buf, ctx->key);
+			aes_cbc((unsigned char *) buf, iv);
 
 			memcpy(out + j * 16, buf, 16);
 			memcpy(iv_change_2,iv_change_1,16);
@@ -477,24 +476,24 @@ void aes256_decrypt_cbc(aes256_context *ctx, uint8_t *in, uint8_t *iv, uint8_t *
 		else
 		{
 			memcpy(iv_change_1,buf,16);
-			aes_addRoundKey_cpy(buf, ctx->deckey, ctx->key);
-			aes_shiftRows_inv(buf);
-			aes_subBytes_inv(buf);
+			aes_addRoundKey_cpy((unsigned char *) buf, ctx->deckey, ctx->key);
+			aes_shiftRows_inv((unsigned char *) buf);
+			aes_subBytes_inv((unsigned char *) buf);
 
 			for (i = 14, rcon = 0x80; --i;)
 			{
 				if( ( i & 1 ) )
 				{
-					aes_expandDecKey(ctx->key, &rcon);
-					aes_addRoundKey(buf, &ctx->key[16]);
+					aes_expandDecKey(ctx->key, (unsigned char *) &rcon);
+					aes_addRoundKey((unsigned char *) buf, &ctx->key[16]);
 				}
-				else aes_addRoundKey(buf, ctx->key);
-				aes_mixColumns_inv(buf);
-				aes_shiftRows_inv(buf);
-				aes_subBytes_inv(buf);
+				else aes_addRoundKey((unsigned char *) buf, ctx->key);
+				aes_mixColumns_inv((unsigned char *) buf);
+				aes_shiftRows_inv((unsigned char *) buf);
+				aes_subBytes_inv((unsigned char *) buf);
 			}
-			aes_addRoundKey(buf, ctx->key);
-			aes_cbc(buf,iv_change_2);
+			aes_addRoundKey((unsigned char *) buf, ctx->key);
+			aes_cbc((unsigned char *) buf, (unsigned char *) iv_change_2);
 
 			memcpy(out + j * 16, buf, 16);
 			memcpy(iv_change_2,iv_change_1,16);
