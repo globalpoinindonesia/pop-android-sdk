@@ -1,15 +1,6 @@
 apply plugin: 'com.android.application'
 
 android {
-    signingConfigs {
-        POPPlusSDK {
-            storeFile file('d:\\Data\\GetPlus\\GooglePlay\\POPPlus\\GetPlusPOS.jks')
-            storePassword 'Getplus123!@#'
-            keyPassword 'Getplus123!@#'
-            keyAlias = 'GetPlusPOS'
-        }
-    }
-
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
 
@@ -39,7 +30,6 @@ android {
             zipAlignEnabled true
             useProguard true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.POPPlusSDK
         }
     }
 }
