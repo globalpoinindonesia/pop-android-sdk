@@ -117,12 +117,14 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/*
 			if (i < mwSize)
 				input[i] = (unsigned char) mwChar[i];
 			else
-			if(loop == 0)
-				input[i] = 0x23;
-			else
-				input[i] = (unsigned char) (BLOCK_SIZE - mwSize);
+			{
+				if(loop == 0)
+					input[i] = 0x23;
+				else
+					input[i] = (unsigned char) (BLOCK_SIZE - mwSize);
 
-			loop++;
+				loop++;
+			}
 		}
 
 		uint8_t output[BLOCK_SIZE];
