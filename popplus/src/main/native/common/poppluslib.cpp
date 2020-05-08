@@ -149,7 +149,7 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/*
 */
 }
 
-extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclass/* clazz */, jstring mingwen)
+extern "C" jstring Java_id_gpi_popplus_CredLib_DataCheck(JNIEnv *env, jclass/* clazz */, jstring mingwen)
 {
 	aes256_context ctx;
 	aes256_init(&ctx, DecodeEncryptKey());
@@ -167,18 +167,24 @@ extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclas
 
 	uint8_t output[len];
 	aes256_decrypt_cbc(&ctx, resbuf, DecodeEncryptIV(), output, len);
-	uint8_t pad = output[len - 1];
 
-	if (pad < 1 || pad > 0x20)
-		pad = 0;
+	// Go PKCS7Padding
+	if (0x00 < output[len - 1] <= 0x16)
+	{
+		int tmp = output[len - 1];
 
-	int reslen = len - pad;
-	char resultChar[reslen];
-
-	for (int i = 0; i < reslen; i++) {
-		resultChar[i] = output[i];
+		for (int i = len - 1; i >= len - tmp; i--)
+		{
+			if (output[i] != tmp)
+			{
+				memset(output, 0, (size_t)(len));
+				break;
+			}
+			else
+				output[i] = 0;
+		}
 	}
 
 	env->ReleaseStringUTFChars(mingwen, encryptChar);
-	return charToJbyteArray(env, resultChar, reslen);
+	return env->NewStringUTF((char*) output);
 }
