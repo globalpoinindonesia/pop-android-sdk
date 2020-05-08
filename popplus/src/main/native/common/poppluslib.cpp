@@ -186,5 +186,5 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataCheck(JNIEnv *env, jclass/* c
 	}
 
 	env->ReleaseStringUTFChars(mingwen, encryptChar);
-	return env->NewStringUTF((char*) output);
+	return env->NewStringUTF((const char*) output);
 }
