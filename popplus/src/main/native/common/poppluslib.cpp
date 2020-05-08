@@ -100,70 +100,37 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/*
 	aes256_init(&ctx, DecodeEncryptKey());
 
 	const char *mwChar = env->GetStringUTFChars(mingwen, JNI_FALSE);
+	std::string strData(mwChar);
 
-	int i;
-	int mwSize = strlen(mwChar);
-	int remainder = mwSize % BLOCK_SIZE;
+	size_t length = strData.length();
+	int block_num = length / BLOCK_SIZE + 1;
 
-	std::string enc;
-	int loop=0;
+	char* szDataIn = new char[block_num * BLOCK_SIZE + 1];
+	memset(szDataIn, 0x00, static_cast<size_t>(block_num * BLOCK_SIZE + 1));
+	strcpy(szDataIn, strData.c_str());
 
-	if (mwSize < BLOCK_SIZE)
+	// Do PKCS7Padding fill.
+	int k = length % BLOCK_SIZE;
+	int j = length / BLOCK_SIZE;
+	int padding = BLOCK_SIZE - k;
+
+	for (int i = 0; i < padding; i++)
 	{
-		uint8_t input[BLOCK_SIZE];
-
-		for (i = 0; i < BLOCK_SIZE; i++)
-		{
-			if (i < mwSize)
-				input[i] = (unsigned char) mwChar[i];
-			else
-			{
-				if(loop == 0)
-					input[i] = 0x23;
-				else
-					input[i] = (unsigned char) (BLOCK_SIZE - mwSize);
-
-				loop++;
-			}
-		}
-
-		uint8_t output[BLOCK_SIZE];
-		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(), output);
-		enc = base64_encode(output, sizeof(output));
-	}
-	else
-	{
-		int group = mwSize / BLOCK_SIZE;
-		int size = BLOCK_SIZE * (group + 1);
-
-		uint8_t input[size];
-
-		for (i=0; i<size; i++)
-		{
-			if (i < mwSize)
-				input[i] = (unsigned char) mwChar[i];
-			else
-			{
-				if (remainder == 0)
-					input[i] = 0x20;
-				else
-				{
-					if(loop == 0)
-						input[i] = 0x23;
-					else
-						input[i] = (unsigned char) (BLOCK_SIZE - mwSize);
-
-					loop++;
-				}
-			}
-		}
-
-		uint8_t output[size];
-		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(), output);
-		enc = base64_encode(output, sizeof(output));
+		szDataIn[j * BLOCK_SIZE + k + i] = static_cast<char>(padding);
 	}
 
+	szDataIn[block_num * BLOCK_SIZE] = '\0';
+	char *szDataOut = new char[block_num * BLOCK_SIZE + 1];
+	memset(szDataOut, 0, static_cast<size_t>(block_num * BLOCK_SIZE + 1));
+
+	aes256_encrypt_cbc(&ctx, (unsigned char *)(szDataIn), DecodeEncryptIV(),
+	                   (unsigned char *)(szDataOut));
+	std::string enc = base64_encode((const uint8_t *)(szDataOut), strlen(szDataOut));
+
+	delete[] szDataIn;
+	delete[] szDataOut;
 	env->ReleaseStringUTFChars(mingwen, mwChar);
+
 	return env->NewStringUTF(enc.c_str());
 
 /*
@@ -200,7 +167,6 @@ extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclas
 
 	uint8_t output[len];
 	aes256_decrypt_cbc(&ctx, resbuf, DecodeEncryptIV(), output, len);
-
 	uint8_t pad = output[len - 1];
 
 	if (pad < 1 || pad > 0x20)

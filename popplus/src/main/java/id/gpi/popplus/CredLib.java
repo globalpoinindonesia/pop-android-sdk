@@ -33,6 +33,7 @@ public class CredLib
   public static String DataCheck(String data)
   {
     String strTmp = new String(DataDecrypt(data));
+/*
     StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append(strTmp);
     stringBuilder.reverse();
@@ -42,7 +43,7 @@ public class CredLib
     stringBuilder = new StringBuilder();
     stringBuilder.append(strTmp);
     stringBuilder.reverse();
-
-    return stringBuilder.substring(0);
+*/
+    return strTmp;
   }
 }
