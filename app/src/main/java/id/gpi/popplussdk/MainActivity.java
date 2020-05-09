@@ -26,8 +26,6 @@ public class MainActivity extends AppCompatActivity {
 		temp.put("Satu", "1");
 		temp.put("Dua", "2");
 		temp.put("Tiga", "3");
-		temp.put("Empat", "411");
-		temp.put("Lima", "544");
 
 		TextView tvHello = findViewById(R.id.tvHello);
 
