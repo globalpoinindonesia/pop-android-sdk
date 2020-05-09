@@ -1,13 +1,13 @@
 #include <string>
 
 // development basic authentication
-std::string chrUserAuth("602027FB561E08105A23F098B4488D0B97AD53265E1BF58522D79A535A4FF715");
-std::string chrPassAuth("8FDA2B4A2E4675F7379FE33CAA22DA8B0892E8EFFE2F09F8268E208CA5818FA8");
+std::string chrUserAuth("Q8hmGlanDbzf3UlXL/uN0YsEWwYJqYTUepzUk/iCXLk=");
+std::string chrPassAuth("fAy0bf7WB1ex3OsnzudNH4HYqgGH386mUMV4mLkuAas=");
 
 // development encryption key
-std::string devkey("mBI+LWhYkOjClxjfuUrFZHHYfO17lBgRh4bLnVuuLRQ=");
+std::string devkey("ziwz941qo9Ew7BAEPeex3vTxsACdQ/w5JG/p7L745OU=");
 
 // development init vector
-std::string deviv("hhMtWk0xUL6sFlkOrw9hXA==");
+std::string deviv("iZu8eCEejbjNbj3ixHba3R0xh33bINIGYfKOjOXcX7k=");
 
 const int BLOCK_SIZE = 32;

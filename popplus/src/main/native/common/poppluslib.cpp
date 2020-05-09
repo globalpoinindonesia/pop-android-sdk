@@ -7,20 +7,34 @@
 #include "utils.hpp"
 #include "../encryptor/aes256.h"
 
-unsigned char* DecodeEncryptKey() {
-		return base64_decode(devkey).data;
+unsigned char* DecodeEncryptKey(std::string publickey) {
+		return base64_decode(devkey + publickey).data;
 }
 
-unsigned char* DecodeEncryptIV() {
-		return base64_decode(deviv).data;
+unsigned char* DecodeEncryptIV(std::string publicvector) {
+		return base64_decode(deviv + publicvector).data;
 }
 
-extern "C" jstring Java_id_gpi_popplus_CredLib_UserAuth(JNIEnv *env, jclass/* clazz */) {
-	return env-> NewStringUTF(chrUserAuth.c_str());
+extern "C" jstring Java_id_gpi_popplus_CredLib_UserAuth(JNIEnv *env, jclass/* clazz */, jstring publicusername) {
+	const char *ccUsername = env->GetStringUTFChars(publicusername, JNI_FALSE);
+
+	std::string strUsername(ccUsername);
+
+	std::reverse(strUsername.begin(), strUsername.end());
+	std::reverse(chrUserAuth.begin(), chrUserAuth.end());
+
+	return env-> NewStringUTF((strUsername + chrUserAuth).c_str());
 }
 
-extern "C" jstring Java_id_gpi_popplus_CredLib_PassAuth(JNIEnv *env, jclass/* clazz */) {
-	return env-> NewStringUTF(chrPassAuth.c_str());
+extern "C" jstring Java_id_gpi_popplus_CredLib_PassAuth(JNIEnv *env, jclass/* clazz */, jstring publicpassword) {
+	const char *ccPassword = env->GetStringUTFChars(publicpassword, JNI_FALSE);
+
+	std::string strPassword(ccPassword);
+
+	std::reverse(strPassword.begin(), strPassword.end());
+	std::reverse(chrPassAuth.begin(), chrPassAuth.end());
+
+	return env-> NewStringUTF((strPassword + chrPassAuth).c_str());
 }
 
 extern "C" jstring Java_id_gpi_popplus_CredLib_DeviceRSN(JNIEnv *env, jclass/* clazz */, jstring DeviceID, jstring Serial, jstring Imei)
@@ -94,10 +108,14 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DeviceRSN(JNIEnv *env, jclass/* c
 	return env->NewStringUTF(DeviceRSN.c_str());
 }
 
-extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/* clazz */, jstring mingwen)
+extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/* clazz */,
+	jstring mingwen, jstring publickey, jstring publicvector)
 {
+	const char* ccKey = env->GetStringUTFChars(publickey, JNI_FALSE);
+	std::string strKey(ccKey);
+
 	aes256_context ctx;
-	aes256_init(&ctx, DecodeEncryptKey());
+	aes256_init(&ctx, DecodeEncryptKey(strKey));
 
 	const char *mwChar = env->GetStringUTFChars(mingwen, JNI_FALSE);
 
@@ -128,7 +146,10 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/*
 		}
 
 		uint8_t output[BLOCK_SIZE];
-		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(), output);
+		const char* ccVector = env->GetStringUTFChars(publicvector, JNI_FALSE);
+		std::string strVector(ccVector);
+
+		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(strVector), output);
 		enc = base64_encode(output, sizeof(output));
 	}
 	else
@@ -159,33 +180,25 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/*
 		}
 
 		uint8_t output[size];
-		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(), output);
+		const char* ccVector = env->GetStringUTFChars(publicvector, JNI_FALSE);
+		std::string strVector(ccVector);
+
+		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(strVector), output);
 		enc = base64_encode(output, sizeof(output));
 	}
 
 	env->ReleaseStringUTFChars(mingwen, mwChar);
 	return env->NewStringUTF(enc.c_str());
-
-/*
-	json j1;
-	j1["BaseURL"] = "https://dev-popplus.gpiapis.com";
-	j1["ClientID"] = "602027FB561E08105A23F098B4488D0B97AD53265E1BF58522D79A535A4FF715";
-	j1["ClientSecret"] = "8FDA2B4A2E4675F7379FE33CAA22DA8B0892E8EFFE2F09F8268E208CA5818FA8";
-	j1["DeviceID"] = "356048081566662";
-	j1["RandomKey"] = getRandomKey(32);
-	j1["Scope"] = "Mobile POS";
-	j1["Timestamp"] = getTimeStamp();
-
-	const char* encResult = EncryptData(j1.dump().c_str());
-	return env->NewStringUTF(encResult);
-//	return env->NewStringUTF(j1.dump().c_str());
-*/
 }
 
-extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclass/* clazz */, jstring mingwen)
+extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclass/* clazz */, jstring mingwen,
+	jstring publickey, jstring publicvector)
 {
+	const char* ccKey = env->GetStringUTFChars(publickey, JNI_FALSE);
+	std::string strKey(ccKey);
+
 	aes256_context ctx;
-	aes256_init(&ctx, DecodeEncryptKey());
+	aes256_init(&ctx, DecodeEncryptKey(strKey));
 
 	const char *encryptChar = env->GetStringUTFChars(mingwen, JNI_FALSE);
 	std::string strData(encryptChar);
@@ -199,7 +212,10 @@ extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclas
 	}
 
 	uint8_t output[len];
-	aes256_decrypt_cbc(&ctx, resbuf, DecodeEncryptIV(), output, len);
+	const char* ccVector = env->GetStringUTFChars(publicvector, JNI_FALSE);
+	std::string strVector(ccVector);
+
+	aes256_decrypt_cbc(&ctx, resbuf, DecodeEncryptIV(strVector), output, len);
 
 	uint8_t pad = output[len - 1];
 

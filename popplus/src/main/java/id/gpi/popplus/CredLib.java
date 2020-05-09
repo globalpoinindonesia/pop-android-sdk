@@ -24,15 +24,15 @@ public class CredLib
     }
   }
 
-  static native byte[] DataDecrypt(String str);
-  public static native String DataProcess(String str);
+  static native byte[] DataDecrypt(String str, String PublicKey, String PublicVector);
+  public static native String DataProcess(String str, String PublicKey, String PublicVector);
   public static native String DeviceRSN(String DeviceID, String Serial, String Imei);
-  public static native String UserAuth();
-  public static native String PassAuth();
+  public static native String UserAuth(String PublicUsername);
+  public static native String PassAuth(String PublicPassword);
 
-  public static String DataCheck(String data)
+  public static String DataCheck(String Data, String PublicKey, String PublicVector)
   {
-    String strTmp = new String(DataDecrypt(data));
+    String strTmp = new String(DataDecrypt(Data, PublicKey, PublicVector));
     StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append(strTmp);
     stringBuilder.reverse();
