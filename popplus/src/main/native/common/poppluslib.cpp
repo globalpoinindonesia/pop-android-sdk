@@ -8,11 +8,23 @@
 #include "../encryptor/aes256.h"
 
 unsigned char* DecodeEncryptKey(std::string publickey) {
-	return base64_decode(devkey + publickey).data;
+	std::string tmppublickey = publickey;
+	std::string tmpdevkey = devkey;
+
+	std::reverse(tmppublickey.begin(), tmppublickey.end());
+	std::reverse(tmpdevkey.begin(), tmpdevkey.end());
+
+	return base64_decode(tmppublickey + tmpdevkey).data;
 }
 
 unsigned char* DecodeEncryptIV(std::string publicvector) {
-	return base64_decode(deviv + publicvector).data;
+	std::string tmppublicvector = publicvector;
+	std::string tmpdeviv = deviv;
+
+	std::reverse(tmppublicvector.begin(), tmppublicvector.end());
+	std::reverse(tmpdeviv.begin(), tmpdeviv.end());
+
+	return base64_decode(tmppublicvector + tmpdeviv).data;
 }
 
 extern "C" jstring Java_id_gpi_popplus_CredLib_UserAuth(JNIEnv *env, jclass/* clazz */, jstring publicusername) {
