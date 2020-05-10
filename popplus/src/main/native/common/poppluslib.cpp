@@ -8,33 +8,33 @@
 #include "../encryptor/aes256.h"
 
 unsigned char* DecodeEncryptKey(std::string publickey) {
-		return base64_decode(devkey + publickey).data;
+	return base64_decode(devkey + publickey).data;
 }
 
 unsigned char* DecodeEncryptIV(std::string publicvector) {
-		return base64_decode(deviv + publicvector).data;
+	return base64_decode(deviv + publicvector).data;
 }
 
 extern "C" jstring Java_id_gpi_popplus_CredLib_UserAuth(JNIEnv *env, jclass/* clazz */, jstring publicusername) {
 	const char *ccUsername = env->GetStringUTFChars(publicusername, JNI_FALSE);
-
 	std::string strUsername(ccUsername);
-
 	std::reverse(strUsername.begin(), strUsername.end());
-	std::reverse(chrUserAuth.begin(), chrUserAuth.end());
 
-	return env-> NewStringUTF((strUsername + chrUserAuth).c_str());
+	std::string tmpUserAuth = chrUserAuth;
+	std::reverse(tmpUserAuth.begin(), tmpUserAuth.end());
+
+	return env-> NewStringUTF((strUsername + tmpUserAuth).c_str());
 }
 
 extern "C" jstring Java_id_gpi_popplus_CredLib_PassAuth(JNIEnv *env, jclass/* clazz */, jstring publicpassword) {
 	const char *ccPassword = env->GetStringUTFChars(publicpassword, JNI_FALSE);
-
 	std::string strPassword(ccPassword);
-
 	std::reverse(strPassword.begin(), strPassword.end());
-	std::reverse(chrPassAuth.begin(), chrPassAuth.end());
 
-	return env-> NewStringUTF((strPassword + chrPassAuth).c_str());
+	std::string tmpPassAuth = chrPassAuth;
+	std::reverse(tmpPassAuth.begin(), tmpPassAuth.end());
+
+	return env-> NewStringUTF((strPassword + tmpPassAuth).c_str());
 }
 
 extern "C" jstring Java_id_gpi_popplus_CredLib_DeviceRSN(JNIEnv *env, jclass/* clazz */, jstring DeviceID, jstring Serial, jstring Imei)
