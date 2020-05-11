@@ -7,24 +7,32 @@
 #include "utils.hpp"
 #include "../encryptor/aes256.h"
 
-unsigned char* DecodeEncryptKey(std::string publickey) {
-	std::string tmppublickey = publickey;
-	std::string tmpdevkey = devkey;
+std::string DecodeString(std::string theData)
+{
+	std::string strKey = theData;
+	std::reverse(strKey.begin(), strKey.end());
 
-	std::reverse(tmppublickey.begin(), tmppublickey.end());
-	std::reverse(tmpdevkey.begin(), tmpdevkey.end());
+	basedata bdata = base64_decode(strKey);
+	int len = bdata.len;
 
-	return base64_decode(tmppublickey + tmpdevkey).data;
+	unsigned char resbuf[len];
+
+	for (int i=0; i<len; i++) {
+		resbuf[i] = *(bdata.data + i);
+	}
+
+	resbuf[len] = '\0';
+
+	std::string result((const char *) resbuf);
+	return result;
 }
 
-unsigned char* DecodeEncryptIV(std::string publicvector) {
-	std::string tmppublicvector = publicvector;
-	std::string tmpdeviv = deviv;
-
-	std::reverse(tmppublicvector.begin(), tmppublicvector.end());
-	std::reverse(tmpdeviv.begin(), tmpdeviv.end());
-
-	return base64_decode(tmppublicvector + tmpdeviv).data;
+std::string EncodeString(std::string defaultPublic, std::string defaultPrivate)
+{
+	std::string tmpKey = DecodeString(defaultPublic) + DecodeString(defaultPrivate);
+	const uint8_t * result = (const uint8_t *)(tmpKey.c_str());
+	std::string encoded = base64_encode(result, tmpKey.length());
+	return encoded;
 }
 
 extern "C" jstring Java_id_gpi_popplus_CredLib_UserAuth(JNIEnv *env, jclass/* clazz */, jstring publicusername) {
@@ -126,8 +134,11 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/*
 	const char* ccKey = env->GetStringUTFChars(publickey, JNI_FALSE);
 	std::string strKey(ccKey);
 
+	const char* ccVector = env->GetStringUTFChars(publicvector, JNI_FALSE);
+	std::string strVector(ccVector);
+
 	aes256_context ctx;
-	aes256_init(&ctx, DecodeEncryptKey(strKey));
+	aes256_init(&ctx, base64_decode(EncodeString(strKey, devkey)).data);
 
 	const char *mwChar = env->GetStringUTFChars(mingwen, JNI_FALSE);
 
@@ -158,10 +169,7 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/*
 		}
 
 		uint8_t output[BLOCK_SIZE];
-		const char* ccVector = env->GetStringUTFChars(publicvector, JNI_FALSE);
-		std::string strVector(ccVector);
-
-		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(strVector), output);
+		aes256_encrypt_cbc(&ctx, input, base64_decode(EncodeString(strVector, deviv)).data, output);
 		enc = base64_encode(output, sizeof(output));
 	}
 	else
@@ -192,10 +200,7 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DataProcess(JNIEnv *env, jclass/*
 		}
 
 		uint8_t output[size];
-		const char* ccVector = env->GetStringUTFChars(publicvector, JNI_FALSE);
-		std::string strVector(ccVector);
-
-		aes256_encrypt_cbc(&ctx, input, DecodeEncryptIV(strVector), output);
+		aes256_encrypt_cbc(&ctx, input, base64_decode(EncodeString(strVector, deviv)).data, output);
 		enc = base64_encode(output, sizeof(output));
 	}
 
@@ -210,7 +215,7 @@ extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclas
 	std::string strKey(ccKey);
 
 	aes256_context ctx;
-	aes256_init(&ctx, DecodeEncryptKey(strKey));
+	aes256_init(&ctx, base64_decode(EncodeString(strKey, devkey)).data);
 
 	const char *encryptChar = env->GetStringUTFChars(mingwen, JNI_FALSE);
 	std::string strData(encryptChar);
@@ -227,7 +232,7 @@ extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclas
 	const char* ccVector = env->GetStringUTFChars(publicvector, JNI_FALSE);
 	std::string strVector(ccVector);
 
-	aes256_decrypt_cbc(&ctx, resbuf, DecodeEncryptIV(strVector), output, len);
+	aes256_decrypt_cbc(&ctx, resbuf, base64_decode(EncodeString(strVector, deviv)).data, output, len);
 
 	uint8_t pad = output[len - 1];
 
@@ -243,4 +248,11 @@ extern "C" jbyteArray Java_id_gpi_popplus_CredLib_DataDecrypt(JNIEnv *env, jclas
 
 	env->ReleaseStringUTFChars(mingwen, encryptChar);
 	return charToJbyteArray(env, resultChar, reslen);
+}
+
+extern "C" jstring Java_id_gpi_popplus_CredLib_Demonstration(JNIEnv *env, jclass/* clazz */, jstring test1)
+{
+	const char* ccKey = env->GetStringUTFChars(test1, JNI_FALSE);
+	std::string strKey(ccKey);
+	return env->NewStringUTF(EncodeString(strKey, devkey).c_str());
 }

@@ -33,15 +33,17 @@ public class MainActivity extends AppCompatActivity {
 			public void onClick(View v) {
 				for(int i=0; i<150; i++)
 				{
+//					Log.d("Decode", "Decode" + " : " + CredLib.Demonstration("==QVT50NXlVVCVENFV0cz4UN"));
+
 					Log.d("Username", "Username" + " : " + CredLib.UserAuth("012957d7ba2c6afe38d6eca8d58b3cfa"));
 					Log.d("Password", "Password" + " : " + CredLib.PassAuth("bd6ab01f261ee05ebccfe19108f995d9"));
 					Log.d("DeviceRSN", "Device" + " : " + CredLib.DeviceRSN("123", "456", "789"));
 
 					String strTest = CredLib.DataProcess(temp.toString(),
-						"gpDMmp48eJWui6Pp", "j0LMmama0z1");
+						"==QVT50NXlVVCVENFV0cz4UN", "=IkS1UFb0EEa");
 					Log.d("Enkrip", "Endkrip ke " + (i+1) + " : " + strTest);
 					Log.d("Dekrip", "Dekrip ke " + (i+1) + " : " + CredLib.DataCheck(strTest,
-						"gpDMmp48eJWui6Pp", "j0LMmama0z1"));
+						"==QVT50NXlVVCVENFV0cz4UN", "=IkS1UFb0EEa"));
 
 					try {
 						Thread.sleep(1000);

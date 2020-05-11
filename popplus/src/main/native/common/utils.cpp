@@ -2,6 +2,7 @@
 #include <cstring>
 #include <string>
 #include <android/log.h>
+#include "../encryptor/base64.hpp"
 
 jbyteArray charToJbyteArray(JNIEnv *env, char *src, int buffer_size) {
 	int i;

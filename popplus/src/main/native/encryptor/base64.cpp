@@ -101,7 +101,7 @@ basedata base64_decode(string const& encoded_string) {
 	vector<uint8_t> vector = base64_decode_vector(encoded_string);
 	char *buffer = new char[vector.size()];
 	copy(vector.begin(), vector.end(), buffer);
-	bb.data = reinterpret_cast<unsigned char *>(buffer);
+	bb.data = (unsigned char *)(buffer);
 	bb.len = vector.size();
 	return bb;
 }

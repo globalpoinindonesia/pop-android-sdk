@@ -29,6 +29,7 @@ public class CredLib
   public static native String DeviceRSN(String DeviceID, String Serial, String Imei);
   public static native String UserAuth(String PublicUsername);
   public static native String PassAuth(String PublicPassword);
+//  public static native String Demonstration(String test1);
 
   public static String DataCheck(String Data, String PublicKey, String PublicVector)
   {
