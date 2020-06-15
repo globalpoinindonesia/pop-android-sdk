@@ -1,2 +1,2 @@
 # POPPlus Android SDK
-Android SDK untuk aplikasi POP
+Android SDK untuk aplikasi POP Plus
