@@ -1,3 +1,0 @@
-rootProject.name='PopPlusSDK'
-include ':app'
-include ':popplus'
