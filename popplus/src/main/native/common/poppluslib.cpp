@@ -67,7 +67,7 @@ extern "C" jstring Java_id_gpi_popplus_CredLib_DeviceRSN(JNIEnv *env, jclass/* c
 
 	std::string deviceid(ccDeviceID);
 	std::string copy1("");
-	std::string cmpr("00000000");
+	std::string cmpr("000000000000");
 
 	if (deviceid.find(cmpr) == std::string::npos) {
 		copy1 = deviceid;
